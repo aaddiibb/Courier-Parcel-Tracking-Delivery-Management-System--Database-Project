@@ -18,3 +18,16 @@
 @@02-schema/07-parcel-status-history.sql
 @@02-schema/08-delivery-attempts.sql
 @@02-schema/09-fees.sql
+
+-- Day 4: constraints, column modifications, seed data, DML demos
+@@02-schema/10-alter-constraints.sql
+@@02-schema/11-alter-modify.sql
+@@03-seed/01-customers.sql
+@@03-seed/02-receivers.sql
+@@03-seed/03-branches.sql
+@@03-seed/04-riders.sql
+@@03-seed/05-parcels.sql
+@@03-seed/06-parcel-status-history.sql
+@@03-seed/07-delivery-attempts.sql
+@@03-seed/08-fees.sql
+@@03-seed/09-dml-demos.sql

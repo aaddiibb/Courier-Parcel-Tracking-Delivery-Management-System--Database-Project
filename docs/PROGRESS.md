@@ -70,4 +70,34 @@
 - `parcel_status_history` ON DELETE CASCADE from parcels — trigger auto-population deferred to Day 11
 - No constraints, seed data, or app code added today
 
-## Next: Day 4 — Constraints + seed data
+## Day 4 — Completed
+
+### Phase A — Constraints & Column Modifications
+- 9 named CHECK/UNIQUE constraints added via `02-schema/10-alter-constraints.sql` (re-runnable):
+  - `chk_parcel_status`, `chk_parcel_weight`, `chk_parcel_branches`
+  - `chk_attempt_flag`, `chk_fee_paid`, `chk_fee_total`, `chk_rider_active`
+  - `uq_customer_phone`, `uq_customer_email`
+- `02-schema/11-alter-modify.sql`: widened `customers.address` → VARCHAR2(400); confirmed `receivers.phone` NOT NULL
+- `01-setup/03-grant-privileges.sql`: stubs replaced with correct table-level grants for `role_branch_mgr`, `role_rider`, `role_customer`
+
+### Phase B — Seed Data
+| Table                  | Rows |
+|------------------------|------|
+| customers              |   15 |
+| receivers              |   20 |
+| branches               |    6 |
+| riders                 |   12 |
+| parcels                |   30 |
+| parcel_status_history  |   85 |
+| delivery_attempts      |   14 |
+| fees                   |   30 |
+
+- Parcel distribution: 5 BOOKED, 8 IN_TRANSIT, 4 OUT_FOR_DELIVERY, 10 DELIVERED, 3 RETURNED
+- `delivery_attempts` = 14 (15 inserted, 1 deleted by DML demo in 09-dml-demos.sql)
+- `09-dml-demos.sql`: Lab 4 demo — UPDATE parcels status, UPDATE fees paid_flag, DELETE failed attempt
+
+### Verification
+- `SELECT COUNT(*) FROM parcels` → **30** ✓
+- All 11 new files appended to `run-all.sql` in correct order
+
+## Next: Day 5 — SELECT queries (basic + WHERE + ORDER BY)
