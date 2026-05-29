@@ -15,6 +15,17 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
+                        {{ __('Customers') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.branches.index')" :active="request()->routeIs('admin.branches.*')">
+                        {{ __('Branches') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.riders.index')" :active="request()->routeIs('admin.riders.*')">
+                        {{ __('Riders') }}
+                    </x-nav-link>
+                    {{-- Parcels — Day 6 --}}
+                    {{-- Lab Demos — Day 7 --}}
                 </div>
             </div>
 
@@ -70,6 +81,17 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
+                {{ __('Customers') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.branches.index')" :active="request()->routeIs('admin.branches.*')">
+                {{ __('Branches') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.riders.index')" :active="request()->routeIs('admin.riders.*')">
+                {{ __('Riders') }}
+            </x-responsive-nav-link>
+            {{-- Parcels — Day 6 --}}
+            {{-- Lab Demos — Day 7 --}}
         </div>
 
         <!-- Responsive Settings Options -->
