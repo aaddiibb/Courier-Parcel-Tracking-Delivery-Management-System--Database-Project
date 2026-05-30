@@ -49,6 +49,23 @@
                 </nav>
             @endif
         </header>
+        {{-- Track a Parcel --}}
+        <div class="w-full max-w-[335px] lg:max-w-4xl mx-auto mb-6">
+            <div class="bg-indigo-700 rounded-xl p-6 text-white">
+                <h2 class="text-xl font-bold mb-1">Track a Parcel</h2>
+                <p class="text-indigo-200 text-sm mb-4">Enter your tracking code to get real-time status updates.</p>
+                <form method="POST" action="{{ route('track') }}" class="flex gap-2">
+                    @csrf
+                    <input type="text" name="tracking_code" placeholder="e.g. CDB202501001"
+                           class="flex-1 rounded-lg px-4 py-2 text-gray-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                    <button type="submit"
+                            class="bg-white text-indigo-700 font-semibold px-5 py-2 rounded-lg text-sm hover:bg-indigo-50">
+                        Track
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
             <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
                 <div class="text-[13px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">

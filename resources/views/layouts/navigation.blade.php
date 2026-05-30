@@ -24,7 +24,9 @@
                     <x-nav-link :href="route('admin.riders.index')" :active="request()->routeIs('admin.riders.*')">
                         {{ __('Riders') }}
                     </x-nav-link>
-                    {{-- Parcels — Day 6 --}}
+                    <x-nav-link :href="route('admin.parcels.index')" :active="request()->routeIs('admin.parcels.*')">
+                        {{ __('Parcels') }}
+                    </x-nav-link>
                     {{-- Lab Demos — Day 7 --}}
                 </div>
             </div>
@@ -90,7 +92,9 @@
             <x-responsive-nav-link :href="route('admin.riders.index')" :active="request()->routeIs('admin.riders.*')">
                 {{ __('Riders') }}
             </x-responsive-nav-link>
-            {{-- Parcels — Day 6 --}}
+            <x-responsive-nav-link :href="route('admin.parcels.index')" :active="request()->routeIs('admin.parcels.*')">
+                {{ __('Parcels') }}
+            </x-responsive-nav-link>
             {{-- Lab Demos — Day 7 --}}
         </div>
 
