@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\RiderController;
 use App\Http\Controllers\Admin\ParcelController;
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\Lab\JoinController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware('auth')->prefix('lab')->name('lab.')->group(function () {
+    Route::get('/joins', [JoinController::class, 'index'])->name('joins');
 });
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
