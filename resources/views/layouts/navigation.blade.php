@@ -44,6 +44,12 @@
                                 <x-dropdown-link :href="route('lab.joins')" :active="request()->routeIs('lab.joins')">
                                     {{ __('Joins (Labs 9 & 10)') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('lab.aggregates')" :active="request()->routeIs('lab.aggregates')">
+                                    {{ __('Aggregates & HAVING (Labs 11 & 12)') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('lab.subqueries')" :active="request()->routeIs('lab.subqueries')">
+                                    {{ __('Subqueries (Labs 13 & 14)') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -120,6 +126,12 @@
                 <div class="px-4 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wide">Lab Demos</div>
                 <x-responsive-nav-link :href="route('lab.joins')" :active="request()->routeIs('lab.joins')">
                     {{ __('Joins (Labs 9 & 10)') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('lab.aggregates')" :active="request()->routeIs('lab.aggregates')">
+                    {{ __('Aggregates & HAVING (Labs 11 & 12)') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('lab.subqueries')" :active="request()->routeIs('lab.subqueries')">
+                    {{ __('Subqueries (Labs 13 & 14)') }}
                 </x-responsive-nav-link>
             </div>
         </div>
