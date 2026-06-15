@@ -50,6 +50,9 @@
                                 <x-dropdown-link :href="route('lab.subqueries')" :active="request()->routeIs('lab.subqueries')">
                                     {{ __('Subqueries (Labs 13 & 14)') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('lab.plsql')" :active="request()->routeIs('lab.plsql')">
+                                    {{ __('PL/SQL Basics (Lab 11)') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -132,6 +135,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('lab.subqueries')" :active="request()->routeIs('lab.subqueries')">
                     {{ __('Subqueries (Labs 13 & 14)') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('lab.plsql')" :active="request()->routeIs('lab.plsql')">
+                    {{ __('PL/SQL Basics (Lab 11)') }}
                 </x-responsive-nav-link>
             </div>
         </div>

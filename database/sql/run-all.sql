@@ -31,3 +31,9 @@
 @@03-seed/07-delivery-attempts.sql
 @@03-seed/08-fees.sql
 @@03-seed/09-dml-demos.sql
+
+-- Day 9: PL/SQL basics — logging table + anonymous blocks (as cdb_admin)
+@@05-plsql/00-logging-table.sql
+@@05-plsql/01-block-structure.sql
+@@05-plsql/02-exception-handling.sql
+@@05-plsql/03-cursor-intro.sql
