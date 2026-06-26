@@ -6,10 +6,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\RiderController;
 use App\Http\Controllers\Admin\ParcelController;
 use App\Http\Controllers\TrackingController;
-use App\Http\Controllers\Lab\JoinController;
-use App\Http\Controllers\Lab\AggregateController;
-use App\Http\Controllers\Lab\SubqueryController;
-use App\Http\Controllers\Lab\PlsqlController;
+use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,12 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware('auth')->prefix('lab')->name('lab.')->group(function () {
-    Route::get('/joins',       [JoinController::class,      'index'])->name('joins');
-    Route::get('/aggregates',  [AggregateController::class, 'index'])->name('aggregates');
-    Route::get('/subqueries',  [SubqueryController::class,  'index'])->name('subqueries');
-    Route::get('/plsql',       [PlsqlController::class,     'index'])->name('plsql');
-});
+Route::get('/reports', [ReportsController::class, 'index'])->middleware('auth')->name('reports');
+Route::get('/operations', [ReportsController::class, 'operations'])->middleware('auth')->name('operations');
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('customers', CustomerController::class);

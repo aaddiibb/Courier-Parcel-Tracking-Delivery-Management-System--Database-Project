@@ -1,80 +1,79 @@
 -- 02-exception-handling.sql
--- Lab 11: Named and user-defined exception handling.
+-- Stored procedure: sp_weight_violation_scan
+-- Scans all active parcels for weight compliance using named (NO_DATA_FOUND)
+-- and user-defined (weight_limit_exceeded) exception handling.
+-- Business rule: parcel weight must not exceed 50 kg.
 -- Run as: cdb_admin@XE
 SET SERVEROUTPUT ON;
 
--- ============================================================
--- Block A: NO_DATA_FOUND — SELECT INTO returns zero rows.
--- ============================================================
-DECLARE
-    v_name customers.full_name%TYPE;
+CREATE OR REPLACE PROCEDURE sp_weight_violation_scan AS
+    -- User-defined exception for the 50 kg business limit
+    weight_limit_exceeded EXCEPTION;
+
+    WEIGHT_LIMIT CONSTANT NUMBER := 50;
+
+    v_active_count NUMBER;
+    v_line_no      NUMBER := 0;
+
+    CURSOR c IS
+        SELECT p.tracking_code,
+               p.weight_kg,
+               p.current_status,
+               c.full_name                  AS sender_name,
+               TRUNC(SYSDATE - p.booked_at) AS days_active
+        FROM   parcels p
+        JOIN   customers c ON c.customer_id = p.sender_customer_id
+        WHERE  p.current_status NOT IN ('DELIVERED', 'RETURNED')
+        ORDER  BY p.weight_kg DESC;
 BEGIN
-    SELECT full_name INTO v_name
-    FROM   customers
-    WHERE  customer_id = -999;  -- no such customer
+    DELETE FROM plsql_log WHERE block_id = 'WEIGHT-SCAN';
 
-    DBMS_OUTPUT.PUT_LINE('Found: ' || v_name);  -- never reached
+    -- NO_DATA_FOUND: gracefully handle an empty active-parcel set
+    BEGIN
+        SELECT COUNT(*) INTO v_active_count
+        FROM   parcels
+        WHERE  current_status NOT IN ('DELIVERED', 'RETURNED')
+          AND  ROWNUM = 1;
 
-    DELETE FROM plsql_log WHERE block_id = 'EX-A';
-    INSERT INTO plsql_log VALUES ('EX-A', 1, 'Found: ' || v_name);
+        IF v_active_count = 0 THEN
+            RAISE NO_DATA_FOUND;
+        END IF;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            INSERT INTO plsql_log VALUES (
+                'WEIGHT-SCAN', 1,
+                'INFO|No active parcels to scan.'
+            );
+            COMMIT;
+            RETURN;
+    END;
+
+    FOR rec IN c LOOP
+        BEGIN
+            -- Raise user-defined exception for over-limit parcel
+            IF rec.weight_kg > WEIGHT_LIMIT THEN
+                RAISE weight_limit_exceeded;
+            END IF;
+
+            -- Compliant parcel
+            v_line_no := v_line_no + 1;
+            INSERT INTO plsql_log VALUES (
+                'WEIGHT-SCAN', v_line_no,
+                'OK|' || rec.tracking_code || '|' || rec.weight_kg || '|' ||
+                rec.current_status || '|' || rec.sender_name || '|' || rec.days_active
+            );
+
+        EXCEPTION
+            WHEN weight_limit_exceeded THEN
+                v_line_no := v_line_no + 1;
+                INSERT INTO plsql_log VALUES (
+                    'WEIGHT-SCAN', v_line_no,
+                    'VIOLATION|' || rec.tracking_code || '|' || rec.weight_kg || '|' ||
+                    rec.current_status || '|' || rec.sender_name || '|' || rec.days_active
+                );
+        END;
+    END LOOP;
+
     COMMIT;
-
-EXCEPTION
-    WHEN NO_DATA_FOUND THEN
-        DBMS_OUTPUT.PUT_LINE('NO_DATA_FOUND: no customer with customer_id = -999');
-        DELETE FROM plsql_log WHERE block_id = 'EX-A';
-        INSERT INTO plsql_log VALUES ('EX-A', 1, 'NO_DATA_FOUND: no customer with customer_id = -999');
-        COMMIT;
-END;
-/
-
--- ============================================================
--- Block B: TOO_MANY_ROWS — SELECT INTO returns > 1 row.
--- ============================================================
-DECLARE
-    v_name customers.full_name%TYPE;
-BEGIN
-    -- No WHERE clause → multiple rows → TOO_MANY_ROWS
-    SELECT full_name INTO v_name FROM customers;
-
-    DBMS_OUTPUT.PUT_LINE('Found: ' || v_name);  -- never reached
-
-    DELETE FROM plsql_log WHERE block_id = 'EX-B';
-    INSERT INTO plsql_log VALUES ('EX-B', 1, 'Found: ' || v_name);
-    COMMIT;
-
-EXCEPTION
-    WHEN TOO_MANY_ROWS THEN
-        DBMS_OUTPUT.PUT_LINE('TOO_MANY_ROWS: SELECT INTO matched more than one customer row');
-        DELETE FROM plsql_log WHERE block_id = 'EX-B';
-        INSERT INTO plsql_log VALUES ('EX-B', 1, 'TOO_MANY_ROWS: SELECT INTO matched more than one customer row');
-        COMMIT;
-END;
-/
-
--- ============================================================
--- Block C: User-defined exception — excessive parcel weight.
--- ============================================================
-DECLARE
-    excessive_weight EXCEPTION;
-    v_weight         NUMBER := 75;   -- exceeds the 50 kg business limit
-BEGIN
-    IF v_weight > 50 THEN
-        RAISE excessive_weight;
-    END IF;
-
-    DBMS_OUTPUT.PUT_LINE('Weight ' || v_weight || ' kg is within limit.');  -- not reached
-
-    DELETE FROM plsql_log WHERE block_id = 'EX-C';
-    INSERT INTO plsql_log VALUES ('EX-C', 1, 'Weight ' || v_weight || ' kg is within limit.');
-    COMMIT;
-
-EXCEPTION
-    WHEN excessive_weight THEN
-        DBMS_OUTPUT.PUT_LINE('excessive_weight raised: ' || v_weight || ' kg exceeds the 50 kg limit');
-        DELETE FROM plsql_log WHERE block_id = 'EX-C';
-        INSERT INTO plsql_log VALUES ('EX-C', 1,
-            'excessive_weight raised: ' || v_weight || ' kg exceeds the 50 kg limit');
-        COMMIT;
-END;
+END sp_weight_violation_scan;
 /
