@@ -76,8 +76,8 @@ class ParcelController extends Controller
             $histId = DB::select("SELECT seq_history_id.NEXTVAL AS id FROM DUAL")[0]->id;
             DB::insert("
                 INSERT INTO parcel_status_history (history_id, parcel_id, status, changed_at, changed_by, remarks)
-                VALUES (:hid, :pid, 'BOOKED', SYSDATE, :by, 'Parcel booked')
-            ", ['hid' => $histId, 'pid' => $id, 'by' => auth()->user()->name]);
+                VALUES (:hid, :pid, 'BOOKED', SYSDATE, :changed_by, 'Parcel booked')
+            ", ['hid' => $histId, 'pid' => $id, 'changed_by' => auth()->user()->name]);
 
             $base         = 50;
             $weightCharge = round($request->weight_kg * 20, 2);
@@ -162,13 +162,13 @@ class ParcelController extends Controller
             $histId = DB::select("SELECT seq_history_id.NEXTVAL AS id FROM DUAL")[0]->id;
             DB::insert("
                 INSERT INTO parcel_status_history (history_id, parcel_id, status, changed_at, changed_by, remarks)
-                VALUES (:hid, :pid, :status, SYSDATE, :by, :remarks)
+                VALUES (:hid, :pid, :status, SYSDATE, :changed_by, :remarks)
             ", [
-                'hid'     => $histId,
-                'pid'     => $id,
-                'status'  => $request->new_status,
-                'by'      => auth()->user()->name,
-                'remarks' => $request->remarks,
+                'hid'        => $histId,
+                'pid'        => $id,
+                'status'     => $request->new_status,
+                'changed_by' => auth()->user()->name,
+                'remarks'    => $request->remarks,
             ]);
         });
 

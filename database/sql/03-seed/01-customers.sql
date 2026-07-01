@@ -47,4 +47,9 @@ VALUES (seq_customer_id.NEXTVAL, 'Mahmuda Parvin',      '01511-500010', 'mahmuda
 INSERT INTO customers (customer_id, full_name, phone, email, address, created_at)
 VALUES (seq_customer_id.NEXTVAL, 'Zahirul Haque',       '01911-400020', 'zahir.haque@gmail.com',   '7 Boyra, Khulna',                 SYSDATE - 20);
 
-PROMPT 15 customers inserted.
+
+INSERT INTO customers (customer_id, full_name, phone, email, address, created_at)
+VALUES (seq_customer_id.NEXTVAL, 'Adib Raian',  '04911-300010', 'haque@gmail.com',   'Khulna',                 SYSDATE - 10);
+
+
+PROMPT 16 customers inserted.

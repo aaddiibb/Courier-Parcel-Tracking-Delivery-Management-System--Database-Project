@@ -42,3 +42,9 @@ DEFINE base = 'e:\xampp\htdocs\Courier-Parcel-Tracking-Delivery-Management-Syste
 @&base.\05-plsql\01-block-structure.sql
 @&base.\05-plsql\02-exception-handling.sql
 @&base.\05-plsql\03-cursor-intro.sql
+
+-- Day 10: table-level grants for branch_mgr/rider/customer roles (as SYSTEM)
+@&base.\01-setup\04-table-grants.sql
+
+-- Day 12: customer account linking (as cdb_admin)
+@&base.\02-schema\13-alter-customers-user-link.sql

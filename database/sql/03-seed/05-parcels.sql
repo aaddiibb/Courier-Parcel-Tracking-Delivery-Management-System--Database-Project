@@ -159,4 +159,6 @@ INSERT INTO parcels (parcel_id, tracking_code, sender_customer_id, receiver_id,
     weight_kg, current_status, booked_at, delivered_at)
 VALUES (seq_parcel_id.NEXTVAL,'CDB202600030',1014,1009,1005,1003,1010,25.0,'RETURNED',SYSDATE-8,NULL);
 
+
+
 PROMPT 30 parcels inserted (5 BOOKED, 8 IN_TRANSIT, 4 OUT_FOR_DELIVERY, 10 DELIVERED, 3 RETURNED).
