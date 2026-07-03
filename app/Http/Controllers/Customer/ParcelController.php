@@ -6,14 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Support\CustomerContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PDO;
+use PDOException;
 
 class ParcelController extends Controller
 {
     /**
-     * Replacement for the old public /track page: only reachable when
-     * logged in, and delegates to show() so the same ownership check
-     * (sender_customer_id must match the caller) applies here too.
+     * Pull the RAISE_APPLICATION_ERROR message out of an Oracle PDOException
+     * (the driver's message body is "Error Code : N\nError Message :
+     * ORA-N: <text>\nORA-06512: at ...", so the first "ORA-N: " line is the
+     * one actually raised by our PL/SQL, not the call-stack trace below it).
      */
+    private function oracleErrorMessage(PDOException $e): string
+    {
+        if (preg_match('/ORA-\d+:\s*([^\n]+)/', $e->getMessage(), $m)) {
+            return $m[1];
+        }
+        return 'A database error occurred.';
+    }
+
+
     public function track(Request $request)
     {
         $request->validate(['tracking_code' => 'required|max:20']);
@@ -69,56 +81,30 @@ class ParcelController extends Controller
             'weight_kg'             => 'required|numeric|min:0.1|max:50',
         ]);
 
-        // Ownership check: the chosen receiver must belong to this customer —
-        // never trust the hidden/select value alone.
+    
         $ownsReceiver = DB::select(
             'SELECT receiver_id FROM receivers WHERE receiver_id = :rid AND booking_customer_id = :cid',
             ['rid' => $request->receiver_id, 'cid' => $customerId]
         );
         abort_if(empty($ownsReceiver), 403, 'That receiver does not belong to your account.');
 
-        $id = DB::select('SELECT seq_parcel_id.NEXTVAL AS id FROM DUAL')[0]->id;
+        try {
+            $pdo  = DB::getPdo();
+            $stmt = $pdo->prepare('BEGIN book_parcel(:sid, :rid, :oid, :did, :wt, :by, :tc); END;');
+            $stmt->bindValue(':sid', $customerId);
+            $stmt->bindValue(':rid', $request->receiver_id);
+            $stmt->bindValue(':oid', $request->origin_branch_id);
+            $stmt->bindValue(':did', $request->destination_branch_id);
+            $stmt->bindValue(':wt', $request->weight_kg);
+            $stmt->bindValue(':by', auth()->user()->name);
+            $trackingCode = '';
+            $stmt->bindParam(':tc', $trackingCode, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 30);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            return back()->withInput()->with('error', $this->oracleErrorMessage($e));
+        }
 
-        DB::transaction(function () use ($request, $id, $customerId) {
-            $trackingCode = DB::select(
-                "SELECT 'CDB' || TO_CHAR(SYSDATE,'YYYY') || LPAD(:id, 5, '0') AS code FROM DUAL",
-                ['id' => $id]
-            )[0]->code;
-
-            DB::insert("
-                INSERT INTO parcels
-                    (parcel_id, tracking_code, sender_customer_id, receiver_id,
-                     origin_branch_id, destination_branch_id,
-                     weight_kg, current_status, booked_at)
-                VALUES
-                    (:id, :tc, :sender, :receiver, :origin, :dest, :weight, 'BOOKED', SYSDATE)
-            ", [
-                'id'       => $id,
-                'tc'       => $trackingCode,
-                'sender'   => $customerId,
-                'receiver' => $request->receiver_id,
-                'origin'   => $request->origin_branch_id,
-                'dest'     => $request->destination_branch_id,
-                'weight'   => $request->weight_kg,
-            ]);
-
-            $histId = DB::select('SELECT seq_history_id.NEXTVAL AS id FROM DUAL')[0]->id;
-            DB::insert("
-                INSERT INTO parcel_status_history (history_id, parcel_id, status, changed_at, changed_by, remarks)
-                VALUES (:hid, :pid, 'BOOKED', SYSDATE, :changed_by, 'Booked online by customer')
-            ", ['hid' => $histId, 'pid' => $id, 'changed_by' => auth()->user()->name]);
-
-            $base         = 50;
-            $weightCharge = round($request->weight_kg * 20, 2);
-            $total        = $base + $weightCharge;
-            $feeId        = DB::select('SELECT seq_fee_id.NEXTVAL AS id FROM DUAL')[0]->id;
-            DB::insert("
-                INSERT INTO fees (fee_id, parcel_id, base_amount, weight_charge, total_amount, paid_flag)
-                VALUES (:fid, :pid, :base, :wc, :total, 'N')
-            ", ['fid' => $feeId, 'pid' => $id, 'base' => $base, 'wc' => $weightCharge, 'total' => $total]);
-        });
-
-        return redirect()->route('customer.parcels.show', $id)->with('success', 'Parcel booked successfully.');
+        return redirect()->route('customer.parcels.show', $trackingCode)->with('success', 'Parcel booked successfully.');
     }
 
     public function show(string $trackingCode)
@@ -143,8 +129,7 @@ class ParcelController extends Controller
         abort_if(empty($rows), 404);
         $parcel = $rows[0];
 
-        // Ownership check: role middleware only proves the caller is A customer,
-        // not that they own THIS parcel.
+       
         abort_if($parcel->sender_customer_id != $customerId, 403, 'You do not have access to this parcel.');
 
         $history = DB::select("

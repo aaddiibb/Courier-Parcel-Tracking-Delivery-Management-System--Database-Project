@@ -1,9 +1,4 @@
--- 03-grant-privileges.sql
--- Grants system privileges to roles and assigns roles to users.
--- Run as: SYSTEM@XE
--- NOTE: Table-level grants are in 04-table-grants.sql (run AFTER schema creation).
 
--- System privileges for schema owner role
 GRANT CREATE TABLE     TO role_admin;
 GRANT CREATE SEQUENCE  TO role_admin;
 GRANT CREATE PROCEDURE TO role_admin;

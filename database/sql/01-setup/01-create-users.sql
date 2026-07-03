@@ -1,10 +1,4 @@
--- 01-create-users.sql
--- Creates application users for the courier-db schema.
--- DEMO ONLY: passwords are intentionally simple for academic use.
--- Run as: SYSTEM@XE
--- Re-runnable: ORA-01920 (user already exists) is silently caught.
 
--- cdb_admin: schema owner, all business tables live here
 BEGIN
     EXECUTE IMMEDIATE 'CREATE USER cdb_admin IDENTIFIED BY Admin1234';
 EXCEPTION

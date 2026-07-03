@@ -23,11 +23,17 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'branch_id',
     ];
 
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isBranchMgr(): bool
+    {
+        return $this->role === 'branch_mgr';
     }
 
     public function isCustomer(): bool

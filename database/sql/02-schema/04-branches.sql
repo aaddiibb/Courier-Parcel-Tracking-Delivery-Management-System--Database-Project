@@ -15,4 +15,4 @@ CREATE TABLE branches (
     manager_name VARCHAR2(100)
 );
 
-PROMPT Table BRANCHES created.
+

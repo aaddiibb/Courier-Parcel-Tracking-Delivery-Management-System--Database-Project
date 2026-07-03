@@ -1,8 +1,4 @@
--- 05-parcels.sql
--- 30 parcels: 5 BOOKED, 8 IN_TRANSIT, 4 OUT_FOR_DELIVERY, 10 DELIVERED, 3 RETURNED.
--- Tracking codes CDB202600001–CDB202600030.
--- Constraint chk_parcel_branches requires origin_branch_id <> destination_branch_id.
--- Run as: cdb_admin@XE
+
 
 -- ── BOOKED (5) — no assigned rider yet ────────────────────────────────────
 INSERT INTO parcels (parcel_id, tracking_code, sender_customer_id, receiver_id,
@@ -161,4 +157,4 @@ VALUES (seq_parcel_id.NEXTVAL,'CDB202600030',1014,1009,1005,1003,1010,25.0,'RETU
 
 
 
-PROMPT 30 parcels inserted (5 BOOKED, 8 IN_TRANSIT, 4 OUT_FOR_DELIVERY, 10 DELIVERED, 3 RETURNED).
+

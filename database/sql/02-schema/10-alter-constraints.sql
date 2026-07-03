@@ -1,6 +1,4 @@
--- 10-alter-constraints.sql
--- Lab 6: adds explicitly-named CHECK and UNIQUE constraints to existing tables.
--- Run as: cdb_admin@XE  Re-runnable: ORA-02264 (name already used) is silently caught.
+
 
 -- ── parcels: status check ──────────────────────────────────────────────────
 BEGIN

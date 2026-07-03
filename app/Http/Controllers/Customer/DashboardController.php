@@ -28,12 +28,10 @@ class DashboardController extends Controller
                 $stats[$row->current_status] = $row->cnt;
             }
 
-            $totalSpend = DB::select("
-                SELECT NVL(SUM(f.total_amount), 0) AS total
-                FROM fees f
-                JOIN parcels p ON f.parcel_id = p.parcel_id
-                WHERE p.sender_customer_id = :id AND f.paid_flag = 'Y'
-            ", ['id' => $customer->customer_id])[0]->total;
+            $totalSpend = DB::select(
+                'SELECT customer_total_spend(:id) AS spend FROM DUAL',
+                ['id' => $customer->customer_id]
+            )[0]->spend ?? 0;
 
             $recentParcels = DB::select("
                 SELECT * FROM (

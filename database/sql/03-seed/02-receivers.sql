@@ -1,9 +1,4 @@
--- 02-receivers.sql
--- 20 receivers linked to customers via booking_customer_id.
--- booking_customer_id references customer_ids 1000–1014.
--- Run as: cdb_admin@XE
 
--- Receivers 1000–1014: one per customer
 INSERT INTO receivers (receiver_id, full_name, phone, address, booking_customer_id)
 VALUES (seq_receiver_id.NEXTVAL, 'Anwar Hossain',     '01711-900001', '5 Uttara Sector 4, Dhaka',       1000);
 
@@ -65,4 +60,4 @@ VALUES (seq_receiver_id.NEXTVAL, 'Abdur Rahim',       '01911-900019', '16 Gilata
 INSERT INTO receivers (receiver_id, full_name, phone, address, booking_customer_id)
 VALUES (seq_receiver_id.NEXTVAL, 'Kohinoor Akter',    '01511-900020', '33 Rajpara, Rajshahi',            1004);
 
-PROMPT 20 receivers inserted.
+

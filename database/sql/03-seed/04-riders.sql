@@ -1,10 +1,4 @@
--- 04-riders.sql
--- 12 riders, 2 per branch, mixed vehicle types.
--- Branch IDs: 1000=Dhaka Central, 1001=Dhaka North, 1002=Chittagong,
---             1003=Sylhet, 1004=Khulna, 1005=Rajshahi
--- Run as: cdb_admin@XE
 
--- Dhaka Central (branch 1000)
 INSERT INTO riders (rider_id, full_name, phone, vehicle_type, assigned_branch_id, active_flag)
 VALUES (seq_rider_id.NEXTVAL, 'Delwar Hossain',  '01611-800001', 'motorcycle', 1000, 'Y');
 
@@ -46,4 +40,4 @@ VALUES (seq_rider_id.NEXTVAL, 'Rafiqul Haque',   '01511-800011', 'motorcycle', 1
 INSERT INTO riders (rider_id, full_name, phone, vehicle_type, assigned_branch_id, active_flag)
 VALUES (seq_rider_id.NEXTVAL, 'Jesmin Akter',    '01511-800012', 'van',        1005, 'Y');
 
-PROMPT 12 riders inserted.
+

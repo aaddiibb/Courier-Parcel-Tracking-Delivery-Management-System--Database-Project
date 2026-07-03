@@ -106,4 +106,4 @@ VALUES (seq_fee_id.NEXTVAL,1029,50,500,550,'N',NULL);
 
 COMMIT;
 
-PROMPT 30 fee rows inserted. Transaction committed.
+

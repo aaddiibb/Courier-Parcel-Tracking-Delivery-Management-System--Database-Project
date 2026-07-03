@@ -11,7 +11,9 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboardContro
 use App\Http\Controllers\Customer\ParcelController as CustomerParcelController;
 use App\Http\Controllers\Customer\ReceiverController as CustomerReceiverController;
 use App\Http\Controllers\Branch\DashboardController as BranchDashboardController;
+use App\Http\Controllers\Branch\ParcelController as BranchParcelController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
+use App\Http\Controllers\Rider\DeliveryController as RiderDeliveryController;
 use App\Support\RoleRedirect;
 use Illuminate\Support\Facades\Route;
 
@@ -46,11 +48,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 // ── Branch Manager routes ──────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:branch_mgr'])->prefix('branch')->name('branch.')->group(function () {
     Route::get('/dashboard', [BranchDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/parcels', [BranchParcelController::class, 'index'])->name('parcels.index');
+    Route::get('/parcels/{id}', [BranchParcelController::class, 'show'])->name('parcels.show');
+    Route::post('/parcels/{id}/update-status', [BranchParcelController::class, 'updateStatus'])->name('parcels.updateStatus');
 });
 
 // ── Rider routes ───────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:rider'])->prefix('rider')->name('rider.')->group(function () {
     Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/delivery/{id}/log', [RiderDeliveryController::class, 'logForm'])->name('delivery.log');
+    Route::post('/delivery/{id}/log', [RiderDeliveryController::class, 'logAttempt'])->name('delivery.store');
 });
 
 // ── Customer routes ────────────────────────────────────────────────────────────

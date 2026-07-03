@@ -45,7 +45,7 @@
                 </a>
             @endforeach
 
-            {{-- Lab Demos dropdown --}}
+          <!--  {{-- Lab Demos dropdown --}}
             @php $labActive = request()->is('lab/*'); @endphp
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" @click.outside="open = false"
@@ -79,6 +79,7 @@
                     @endforeach
                 </div>
             </div>
+        -->
 
             {{-- Spacer --}}
             <div class="flex-1"></div>
@@ -111,6 +112,11 @@
 
 {{-- ── Main content ────────────────────────────────────────────────────── --}}
 <main>
+    @if(session('error'))
+        <div class="mx-6 mt-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            {{ session('error') }}
+        </div>
+    @endif
     {{ $slot }}
 </main>
 

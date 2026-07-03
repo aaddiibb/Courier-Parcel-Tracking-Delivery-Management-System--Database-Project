@@ -1,17 +1,12 @@
--- run-all.sql
--- Master script. Can be run from any directory in SQL*Plus or SQL Developer.
--- Day 2 (as SYSTEM): sqlplus system/<pw>@XE @"<full path>\run-all.sql"
--- Day 3+ (as cdb_admin): sqlplus cdb_admin/<pw>@XE @"<full path>\run-all.sql"
---
--- Update base to the absolute path of this file's directory if you move the project.
+
 DEFINE base = 'e:\xampp\htdocs\Courier-Parcel-Tracking-Delivery-Management-System--Database-Project\database\sql'
 
--- Day 2: users, roles, privileges (requires SYSTEM)
+
 @&base.\01-setup\01-create-users.sql
 @&base.\01-setup\02-create-roles.sql
 @&base.\01-setup\03-grant-privileges.sql
 
--- Day 3: sequences and business tables (as cdb_admin)
+
 @&base.\02-schema\01-sequences.sql
 @&base.\02-schema\02-customers.sql
 @&base.\02-schema\03-receivers.sql
@@ -34,10 +29,7 @@ DEFINE base = 'e:\xampp\htdocs\Courier-Parcel-Tracking-Delivery-Management-Syste
 @&base.\03-seed\07-delivery-attempts.sql
 @&base.\03-seed\08-fees.sql
 
--- Day 9: PL/SQL — session logging table + stored procedures (as cdb_admin)
--- sp_intransit_monitor  : explicit cursor, %ROWTYPE, SYSDATE arithmetic
--- sp_weight_violation_scan : user-defined + named exception handling
--- sp_parcel_cost_audit  : %TYPE, %ROWTYPE, arithmetic, comparison operators
+
 @&base.\05-plsql\00-logging-table.sql
 @&base.\05-plsql\01-block-structure.sql
 @&base.\05-plsql\02-exception-handling.sql
@@ -48,3 +40,16 @@ DEFINE base = 'e:\xampp\htdocs\Courier-Parcel-Tracking-Delivery-Management-Syste
 
 -- Day 12: customer account linking (as cdb_admin)
 @&base.\02-schema\13-alter-customers-user-link.sql
+
+-- Day 13: rider account linking (as cdb_admin)
+@&base.\02-schema\12-alter-riders-user-link.sql
+
+-- Procedures & Functions (as cdb_admin) — functions first, procedures depend on them
+@&base.\07-functions\01-calculate-fee.sql
+@&base.\07-functions\02-get-parcel-status.sql
+@&base.\07-functions\03-rider-success-rate.sql
+@&base.\07-functions\04-customer-total-spend.sql
+@&base.\07-functions\05-branch-revenue.sql
+@&base.\06-procedures\01-book-parcel.sql
+@&base.\06-procedures\02-assign-rider.sql
+@&base.\06-procedures\03-update-status.sql

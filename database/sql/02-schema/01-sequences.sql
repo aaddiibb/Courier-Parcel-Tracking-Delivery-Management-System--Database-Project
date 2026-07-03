@@ -1,7 +1,4 @@
--- 01-sequences.sql
--- Creates all sequences for the courier-db schema.
--- Run as: cdb_admin@XE
--- Re-runnable: ORA-00955 (name already in use) is silently caught.
+
 
 BEGIN EXECUTE IMMEDIATE 'CREATE SEQUENCE seq_customer_id START WITH 1000 INCREMENT BY 1 NOCACHE';
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF; END;

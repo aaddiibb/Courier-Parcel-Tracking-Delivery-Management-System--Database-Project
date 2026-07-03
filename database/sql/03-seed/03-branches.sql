@@ -1,6 +1,4 @@
--- 03-branches.sql
--- 6 courier branch offices across major Bangladeshi cities.
--- Run as: cdb_admin@XE
+
 
 INSERT INTO branches (branch_id, branch_name, city, address, phone, manager_name)
 VALUES (seq_branch_id.NEXTVAL, 'Dhaka Central Branch',   'Dhaka',      '42 Motijheel C/A, Dhaka-1000',         '02-9551234', 'Fazlur Rahman');
@@ -20,4 +18,4 @@ VALUES (seq_branch_id.NEXTVAL, 'Khulna Branch',          'Khulna',     '22 KDA A
 INSERT INTO branches (branch_id, branch_name, city, address, phone, manager_name)
 VALUES (seq_branch_id.NEXTVAL, 'Rajshahi Branch',        'Rajshahi',   '5 Shaheb Bazar, Rajshahi-6000',        '0721-77345', 'Khaleda Begum');
 
-PROMPT 6 branches inserted.
+

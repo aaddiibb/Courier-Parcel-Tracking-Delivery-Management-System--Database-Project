@@ -1,7 +1,3 @@
--- 02-create-roles.sql
--- Creates application roles for the courier-db schema.
--- Run as: SYSTEM@XE
--- Re-runnable: ORA-01921 (role already exists) is silently caught.
 
 BEGIN
     EXECUTE IMMEDIATE 'CREATE ROLE role_admin';

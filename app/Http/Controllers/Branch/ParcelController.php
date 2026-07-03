@@ -1,15 +1,22 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Branch;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PDO;
 use PDOException;
 
 class ParcelController extends Controller
 {
+    private const STATUSES = ['BOOKED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'RETURNED'];
+
+    private function branchName(int $branchId): string
+    {
+        $rows = DB::select('SELECT branch_name FROM branches WHERE branch_id = :id', ['id' => $branchId]);
+        return $rows[0]->branch_name ?? 'Unassigned Branch';
+    }
+
     /**
      * Pull the RAISE_APPLICATION_ERROR message out of an Oracle PDOException
      * (the driver's message body is "Error Code : N\nError Message :
@@ -24,73 +31,63 @@ class ParcelController extends Controller
         return 'A database error occurred.';
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $parcels = DB::select("
+        $branchId = auth()->user()->branch_id;
+
+        $status = $request->query('status');
+        if ($status !== null && ! in_array($status, self::STATUSES, true)) {
+            $status = null;
+        }
+        $search = trim((string) $request->query('search', ''));
+
+        $sql = "
             SELECT p.parcel_id, p.tracking_code,
                    c.full_name AS sender_name,
+                   b1.city AS origin_city,
                    b2.city AS destination_city,
                    p.current_status, p.booked_at,
                    r.full_name AS rider_name
             FROM parcels p
             JOIN customers c   ON p.sender_customer_id = c.customer_id
-            JOIN receivers rv  ON p.receiver_id        = rv.receiver_id
             JOIN branches b1   ON p.origin_branch_id   = b1.branch_id
             JOIN branches b2   ON p.destination_branch_id = b2.branch_id
             LEFT JOIN riders r ON p.assigned_rider_id  = r.rider_id
-            ORDER BY p.booked_at DESC
-        ");
-        return view('admin.parcels.index', compact('parcels'));
-    }
+            WHERE (p.origin_branch_id = :branch_id OR p.destination_branch_id = :branch_id2)
+        ";
+        $bindings = ['branch_id' => $branchId, 'branch_id2' => $branchId];
 
-    public function create()
-    {
-        $customers = DB::select('SELECT customer_id, full_name FROM customers ORDER BY full_name');
-        $receivers = DB::select('SELECT receiver_id, full_name FROM receivers ORDER BY full_name');
-        $branches  = DB::select('SELECT branch_id, branch_name, city FROM branches ORDER BY branch_name');
-        $riders    = DB::select("SELECT rider_id, full_name FROM riders WHERE active_flag = 'Y' ORDER BY full_name");
-        return view('admin.parcels.create', compact('customers', 'receivers', 'branches', 'riders'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'sender_customer_id'    => 'required|integer',
-            'receiver_id'           => 'required|integer',
-            'origin_branch_id'      => 'required|integer',
-            'destination_branch_id' => 'required|integer|different:origin_branch_id',
-            'weight_kg'             => 'required|numeric|min:0.1|max:50',
-            'assigned_rider_id'     => 'nullable|integer',
-        ]);
-
-        try {
-            $pdo  = DB::getPdo();
-            $stmt = $pdo->prepare('BEGIN book_parcel(:sid, :rid, :oid, :did, :wt, :by, :tc); END;');
-            $stmt->bindValue(':sid', $request->sender_customer_id);
-            $stmt->bindValue(':rid', $request->receiver_id);
-            $stmt->bindValue(':oid', $request->origin_branch_id);
-            $stmt->bindValue(':did', $request->destination_branch_id);
-            $stmt->bindValue(':wt', $request->weight_kg);
-            $stmt->bindValue(':by', auth()->user()->name);
-            $trackingCode = '';
-            $stmt->bindParam(':tc', $trackingCode, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 30);
-            $stmt->execute();
-        } catch (PDOException $e) {
-            return back()->withInput()->with('error', $this->oracleErrorMessage($e));
+        if ($status !== null) {
+            $sql .= ' AND p.current_status = :status';
+            $bindings['status'] = $status;
         }
 
-        $id = DB::select(
-            'SELECT parcel_id FROM parcels WHERE tracking_code = :tc',
-            ['tc' => $trackingCode]
-        )[0]->parcel_id;
+        if ($search !== '') {
+            $sql .= ' AND (UPPER(p.tracking_code) LIKE :search OR UPPER(c.full_name) LIKE :search2)';
+            $bindings['search'] = '%'.strtoupper($search).'%';
+            $bindings['search2'] = '%'.strtoupper($search).'%';
+        }
 
-        return redirect()->route('admin.parcels.show', $id)->with('success', 'Parcel booked successfully.');
+        $sql .= ' ORDER BY p.booked_at DESC';
+
+        $parcels = DB::select($sql, $bindings);
+
+        return view('branch.parcels.index', [
+            'parcels' => $parcels,
+            'status' => $status,
+            'search' => $search,
+            'statusOptions' => self::STATUSES,
+            'branchName' => $this->branchName($branchId),
+        ]);
     }
 
     public function show(string $id)
     {
+        $branchId = auth()->user()->branch_id;
+
         $rows = DB::select("
             SELECT p.parcel_id, p.tracking_code, p.weight_kg, p.current_status, p.booked_at, p.delivered_at,
+                   p.origin_branch_id, p.destination_branch_id,
                    c.full_name AS sender_name, c.phone AS sender_phone,
                    rv.full_name AS receiver_name, rv.phone AS receiver_phone, rv.address AS receiver_address,
                    b1.branch_name AS origin_branch, b1.city AS origin_city,
@@ -106,6 +103,12 @@ class ParcelController extends Controller
         ", ['id' => $id]);
         abort_if(empty($rows), 404);
         $parcel = $rows[0];
+
+        abort_unless(
+            $parcel->origin_branch_id == $branchId || $parcel->destination_branch_id == $branchId,
+            403,
+            'This parcel does not belong to your branch.'
+        );
 
         $history = DB::select("
             SELECT status, changed_at, changed_by, remarks
@@ -123,19 +126,28 @@ class ParcelController extends Controller
             ORDER BY da.attempted_at
         ", ['id' => $id]);
 
-        $feeRows = DB::select("
-            SELECT base_amount, weight_charge, total_amount, paid_flag, paid_at
-            FROM fees WHERE parcel_id = :id
-        ", ['id' => $id]);
-        $fee = $feeRows[0] ?? null;
-
-        $statuses = ['BOOKED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'RETURNED'];
-
-        return view('admin.parcels.show', compact('parcel', 'history', 'attempts', 'fee', 'statuses'));
+        return view('branch.parcels.show', compact('parcel', 'history', 'attempts') + [
+            'statuses' => self::STATUSES,
+            'branchName' => $this->branchName($branchId),
+        ]);
     }
 
     public function updateStatus(Request $request, string $id)
     {
+        $branchId = auth()->user()->branch_id;
+
+        $rows = DB::select(
+            'SELECT origin_branch_id, destination_branch_id FROM parcels WHERE parcel_id = :id',
+            ['id' => $id]
+        );
+        abort_if(empty($rows), 404);
+
+        abort_unless(
+            $rows[0]->origin_branch_id == $branchId || $rows[0]->destination_branch_id == $branchId,
+            403,
+            'This parcel does not belong to your branch.'
+        );
+
         $request->validate([
             'new_status' => 'required|in:BOOKED,IN_TRANSIT,OUT_FOR_DELIVERY,DELIVERED,RETURNED',
             'remarks'    => 'nullable|max:200',
@@ -153,6 +165,6 @@ class ParcelController extends Controller
             return back()->with('error', $this->oracleErrorMessage($e));
         }
 
-        return redirect()->route('admin.parcels.show', $id)->with('success', 'Status updated.');
+        return redirect()->route('branch.parcels.show', $id)->with('success', 'Status updated.');
     }
 }

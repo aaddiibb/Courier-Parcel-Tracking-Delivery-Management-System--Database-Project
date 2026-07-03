@@ -1,6 +1,3 @@
--- 03-receivers.sql
--- Parcel recipients linked to the booking customer.
--- Run as: cdb_admin@XE  Re-runnable.
 
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE receivers';
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -942 THEN NULL; ELSE RAISE; END IF; END;
@@ -15,4 +12,4 @@ CREATE TABLE receivers (
                                              REFERENCES customers(customer_id)
 );
 
-PROMPT Table RECEIVERS created.
+

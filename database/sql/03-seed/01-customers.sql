@@ -1,6 +1,4 @@
--- 01-customers.sql
--- 15 customers across Dhaka, Chittagong, Sylhet, Khulna, Rajshahi.
--- Run as: cdb_admin@XE  Sequences start at 1000 on first run.
+
 
 INSERT INTO customers (customer_id, full_name, phone, email, address, created_at)
 VALUES (seq_customer_id.NEXTVAL, 'Karim Uddin Ahmed',   '01711-100001', 'karim.ahmed@gmail.com',   '14 Mirpur Road, Dhaka',           SYSDATE - 90);
@@ -52,4 +50,5 @@ INSERT INTO customers (customer_id, full_name, phone, email, address, created_at
 VALUES (seq_customer_id.NEXTVAL, 'Adib Raian',  '04911-300010', 'haque@gmail.com',   'Khulna',                 SYSDATE - 10);
 
 
-PROMPT 16 customers inserted.
+
+

@@ -1,8 +1,4 @@
--- 06-parcel-status-history.sql
--- History rows for every parcel leading to its current_status.
--- BOOKED=1 row, IN_TRANSIT=2, OUT_FOR_DELIVERY=3, DELIVERED=4, RETURNED=4.
--- Parcel IDs 1000–1029 match the order inserted in 05-parcels.sql.
--- Run as: cdb_admin@XE
+
 
 -- ── BOOKED parcels (1000–1004): 1 row each ────────────────────────────────
 INSERT INTO parcel_status_history (history_id,parcel_id,status,changed_at,changed_by,remarks)
@@ -205,4 +201,4 @@ VALUES (seq_history_id.NEXTVAL,1029,'OUT_FOR_DELIVERY', SYSDATE-5, 'cdb_admin','
 INSERT INTO parcel_status_history (history_id,parcel_id,status,changed_at,changed_by,remarks)
 VALUES (seq_history_id.NEXTVAL,1029,'RETURNED',         SYSDATE-3, 'cdb_admin','Parcel refused by receiver');
 
-PROMPT 85 status history rows inserted.
+

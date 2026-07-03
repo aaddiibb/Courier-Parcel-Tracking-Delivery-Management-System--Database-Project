@@ -1,9 +1,4 @@
--- 07-delivery-attempts.sql
--- 15 attempts: 10 successful (DELIVERED parcels), 5 failed (various parcels).
--- Parcel IDs 1000–1029; rider IDs 1000–1011.
--- Run as: cdb_admin@XE
 
--- ── Successful attempts — DELIVERED parcels (1017–1026) ───────────────────
 INSERT INTO delivery_attempts (attempt_id,parcel_id,rider_id,attempted_at,success_flag,failure_reason)
 VALUES (seq_attempt_id.NEXTVAL,1017,1005,SYSDATE-15,'Y',NULL);
 
