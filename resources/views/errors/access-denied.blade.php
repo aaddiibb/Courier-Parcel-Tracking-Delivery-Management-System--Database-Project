@@ -8,7 +8,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center px-4">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center px-4">
 
     <div class="max-w-md w-full text-center">
         <div class="mx-auto mb-6 w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
@@ -18,8 +18,8 @@
             </svg>
         </div>
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Access Denied</h1>
-        <p class="text-gray-500 mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Access Denied</h1>
+        <p class="text-slate-500 mb-8">
             You do not have permission to view this page.<br>
             Please log in with an account that has the required role.
         </p>
@@ -38,7 +38,7 @@
             @endauth
 
             <a href="{{ url('/') }}"
-               class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+               class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors">
                 Go to Home
             </a>
         </div>

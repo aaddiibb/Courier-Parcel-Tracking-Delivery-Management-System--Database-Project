@@ -9,8 +9,6 @@ use PDOException;
 
 class DeliveryController extends Controller
 {
-    private const MAX_FAILED_ATTEMPTS = 3;
-
     /**
      * Resolve the rider_id linked to the authenticated user, and confirm the
      * given parcel is actually assigned to them. Aborts 403 otherwise — same
@@ -59,6 +57,11 @@ class DeliveryController extends Controller
 
         $successFlag = $validated['outcome'] === 'success' ? 'Y' : 'N';
 
+        // Auto-return after 3 failures is handled by trg_auto_return. Status
+        // logging is handled by trg_status_history. This method only records
+        // the attempt, and — for a successful delivery — moves the parcel to
+        // DELIVERED via update_parcel_status; everything else downstream of
+        // that INSERT/UPDATE happens in the database, not here.
         try {
             DB::transaction(function () use ($parcel, $successFlag, $validated) {
                 $attemptId = DB::select('SELECT seq_attempt_id.NEXTVAL AS id FROM DUAL')[0]->id;
@@ -76,20 +79,6 @@ class DeliveryController extends Controller
 
                 if ($successFlag === 'Y') {
                     $this->transitionStatus($parcel->parcel_id, 'DELIVERED', 'Delivered by rider');
-                    return;
-                }
-
-                $failedCount = DB::select(
-                    "SELECT COUNT(*) AS cnt FROM delivery_attempts WHERE parcel_id = :pid AND success_flag = 'N'",
-                    ['pid' => $parcel->parcel_id]
-                )[0]->cnt;
-
-                if ($failedCount >= self::MAX_FAILED_ATTEMPTS) {
-                    $this->transitionStatus(
-                        $parcel->parcel_id,
-                        'RETURNED',
-                        'Auto-returned after '.self::MAX_FAILED_ATTEMPTS.' failed delivery attempts'
-                    );
                 }
             });
         } catch (PDOException $e) {

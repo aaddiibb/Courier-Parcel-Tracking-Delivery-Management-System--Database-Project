@@ -1,38 +1,41 @@
 <x-customer-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Add a Receiver</h2>
-    </x-slot>
+    <x-slot name="header">Add a Receiver</x-slot>
 
-    <div class="max-w-xl bg-white rounded-xl shadow-sm border border-orange-100 p-6">
+    <div class="mb-6">
+        <nav class="text-xs text-slate-400 mb-1">
+            <a href="{{ route('customer.receivers.index') }}" class="hover:text-slate-600">My Addresses</a>
+            <span class="mx-1">/</span>
+            <span class="text-slate-500">Add a Receiver</span>
+        </nav>
+        <h1 class="text-2xl font-bold text-slate-900">Add a Receiver</h1>
+    </div>
+
+    <div class="max-w-xl bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <form method="POST" action="{{ route('customer.receivers.store') }}" class="space-y-4">
             @csrf
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input type="text" name="full_name" value="{{ old('full_name') }}"
-                       class="w-full rounded-lg border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm @error('full_name') border-red-400 @enderror">
-                @error('full_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                <x-input-label value="Full Name" />
+                <x-text-input type="text" name="full_name" :value="old('full_name')" class="w-full" />
+                <x-input-error :messages="$errors->get('full_name')" />
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input type="text" name="phone" value="{{ old('phone') }}"
-                       class="w-full rounded-lg border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm @error('phone') border-red-400 @enderror">
-                @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                <x-input-label value="Phone" />
+                <x-text-input type="text" name="phone" :value="old('phone')" class="w-full" />
+                <x-input-error :messages="$errors->get('phone')" />
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <x-input-label value="Address" />
                 <textarea name="address" rows="3"
-                          class="w-full rounded-lg border-gray-300 focus:ring-orange-500 focus:border-orange-500 text-sm @error('address') border-red-400 @enderror">{{ old('address') }}</textarea>
-                @error('address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('address') border-red-400 @enderror">{{ old('address') }}</textarea>
+                <x-input-error :messages="$errors->get('address')" />
             </div>
 
-            <div class="flex gap-3 pt-2">
-                <button type="submit" class="px-5 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
-                    Save Receiver
-                </button>
-                <a href="{{ route('customer.receivers.index') }}" class="px-5 py-2 text-sm text-gray-600 hover:text-gray-800">
+            <div class="flex gap-3 pt-4 border-t border-slate-100">
+                <x-primary-button type="submit">Save Receiver</x-primary-button>
+                <a href="{{ route('customer.receivers.index') }}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800">
                     Cancel
                 </a>
             </div>

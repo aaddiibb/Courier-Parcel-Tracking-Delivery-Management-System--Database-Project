@@ -31,16 +31,34 @@ class ParcelController extends Controller
         return 'A database error occurred.';
     }
 
+    private const SORT_COLUMNS = [
+        'booked_at'      => 'p.booked_at',
+        'current_status' => 'p.current_status',
+    ];
+
     public function index(Request $request)
     {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to'   => 'nullable|date',
+        ]);
+
         $branchId = auth()->user()->branch_id;
 
         $status = $request->query('status');
         if ($status !== null && ! in_array($status, self::STATUSES, true)) {
             $status = null;
         }
-        $search = trim((string) $request->query('search', ''));
+        $search  = trim((string) $request->query('search', ''));
+        $dateFrom = $request->query('date_from');
+        $dateTo   = $request->query('date_to');
 
+        $sortColumn = self::SORT_COLUMNS[$request->query('sort')] ?? 'p.booked_at';
+        $sortDir    = strtoupper((string) $request->query('dir')) === 'ASC' ? 'ASC' : 'DESC';
+
+        // Branch-ownership condition is the base of the WHERE clause and is
+        // never removed by any filter below — a branch manager can only ever
+        // narrow this set further, never see outside it.
         $sql = "
             SELECT p.parcel_id, p.tracking_code,
                    c.full_name AS sender_name,
@@ -68,7 +86,17 @@ class ParcelController extends Controller
             $bindings['search2'] = '%'.strtoupper($search).'%';
         }
 
-        $sql .= ' ORDER BY p.booked_at DESC';
+        if ($dateFrom) {
+            $sql .= " AND TRUNC(p.booked_at) >= TO_DATE(:date_from, 'YYYY-MM-DD')";
+            $bindings['date_from'] = $dateFrom;
+        }
+
+        if ($dateTo) {
+            $sql .= " AND TRUNC(p.booked_at) <= TO_DATE(:date_to, 'YYYY-MM-DD')";
+            $bindings['date_to'] = $dateTo;
+        }
+
+        $sql .= " ORDER BY {$sortColumn} {$sortDir}";
 
         $parcels = DB::select($sql, $bindings);
 
@@ -76,6 +104,10 @@ class ParcelController extends Controller
             'parcels' => $parcels,
             'status' => $status,
             'search' => $search,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'sort' => $request->query('sort', 'booked_at'),
+            'dir' => strtolower($sortDir),
             'statusOptions' => self::STATUSES,
             'branchName' => $this->branchName($branchId),
         ]);

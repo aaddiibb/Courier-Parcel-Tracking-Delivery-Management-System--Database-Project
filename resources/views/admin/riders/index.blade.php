@@ -1,64 +1,65 @@
 <x-admin-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Riders</h2>
-            <a href="{{ route('admin.riders.create') }}"
-               class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
-                + New Rider
-            </a>
+    <x-slot name="header">Riders</x-slot>
+
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Riders</h1>
+            <p class="mt-1 text-sm text-slate-500">{{ count($riders) }} rider{{ count($riders) === 1 ? '' : 's' }}</p>
         </div>
-    </x-slot>
+        <a href="{{ route('admin.riders.create') }}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            + New Rider
+        </a>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($riders as $r)
-                        <tr>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $r->rider_id }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $r->full_name }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $r->phone }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500 capitalize">{{ $r->vehicle_type }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $r->branch_name ?? '—' }}</td>
-                            <td class="px-6 py-4 text-sm">
-                                @if($r->active_flag === 'Y')
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Yes</span>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">No</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-sm space-x-2">
-                                <a href="{{ route('admin.riders.show', $r->rider_id) }}" class="text-blue-600 hover:underline">View</a>
-                                <a href="{{ route('admin.riders.edit', $r->rider_id) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                <form method="POST" action="{{ route('admin.riders.destroy', $r->rider_id) }}" class="inline"
-                                      onsubmit="return confirm('Delete this rider?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        @if(empty($riders))
+            <div class="py-12 text-center text-slate-400">
+                <p class="text-sm">No riders found.</p>
             </div>
+        @else
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ID</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Phone</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Vehicle</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Branch</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Active</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($riders as $r)
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-4 py-3 text-slate-500">{{ $r->rider_id }}</td>
+                        <td class="px-4 py-3 font-medium text-slate-900">{{ $r->full_name }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $r->phone }}</td>
+                        <td class="px-4 py-3 text-slate-500 capitalize">{{ strtolower($r->vehicle_type) }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $r->branch_name ?? '—' }}</td>
+                        <td class="px-4 py-3">
+                            @if($r->active_flag === 'Y')
+                                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">Yes</span>
+                            @else
+                                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">No</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3 space-x-3">
+                            <a href="{{ route('admin.riders.show', $r->rider_id) }}" class="text-slate-500 hover:text-slate-800">View</a>
+                            <a href="{{ route('admin.riders.edit', $r->rider_id) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a>
+                            <form method="POST" action="{{ route('admin.riders.destroy', $r->rider_id) }}" class="inline"
+                                  onsubmit="return confirm('Delete this rider?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
+        @endif
     </div>
 </x-admin-layout>

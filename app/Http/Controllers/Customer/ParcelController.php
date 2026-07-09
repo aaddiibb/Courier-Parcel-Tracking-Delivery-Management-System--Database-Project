@@ -88,6 +88,7 @@ class ParcelController extends Controller
         );
         abort_if(empty($ownsReceiver), 403, 'That receiver does not belong to your account.');
 
+        // Fee created automatically by trg_auto_fee when book_parcel inserts the parcel row.
         try {
             $pdo  = DB::getPdo();
             $stmt = $pdo->prepare('BEGIN book_parcel(:sid, :rid, :oid, :did, :wt, :by, :tc); END;');

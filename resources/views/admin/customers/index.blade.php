@@ -1,47 +1,68 @@
 <x-admin-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Customers</h2>
-            <a href="{{ route('admin.customers.create') }}"
-               class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
-                + New Customer
-            </a>
+    <x-slot name="header">Customers</x-slot>
+
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Customers</h1>
+            <p class="mt-1 text-sm text-slate-500">{{ count($customers) }} result{{ count($customers) === 1 ? '' : 's' }}</p>
         </div>
-    </x-slot>
+        <a href="{{ route('admin.customers.create') }}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            + New Customer
+        </a>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('success') }}
+    <div class="space-y-6">
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <form method="GET" action="{{ route('admin.customers.index') }}" class="flex flex-wrap items-end gap-3">
+                <div class="flex-1 min-w-[220px]">
+                    <x-input-label value="Search" />
+                    <x-text-input type="text" name="search" :value="$filters['search'] ?? ''" placeholder="Name, phone, or email" class="w-full" />
                 </div>
-            @endif
+                <label class="flex items-center gap-2 text-sm text-slate-700 pb-2">
+                    <input type="checkbox" name="active_only" value="1" @checked(!empty($filters['active_only']))
+                           class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    Has active parcels
+                </label>
+                <x-primary-button type="submit">Filter</x-primary-button>
+                @if(!empty($filters['search']) || !empty($filters['active_only']))
+                    <a href="{{ route('admin.customers.index') }}" class="text-sm text-slate-500 hover:text-slate-700 pb-2">Clear</a>
+                @endif
+            </form>
+        </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            @if(empty($customers))
+                <div class="py-12 text-center text-slate-400">
+                    <p class="text-sm">No customers found.</p>
+                </div>
+            @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200">
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ID</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Phone</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($customers as $c)
-                        <tr>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $c->customer_id }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $c->full_name }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $c->phone }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $c->email ?? '—' }}</td>
-                            <td class="px-6 py-4 text-sm space-x-2">
-                                <a href="{{ route('admin.customers.show', $c->customer_id) }}" class="text-blue-600 hover:underline">View</a>
-                                <a href="{{ route('admin.customers.edit', $c->customer_id) }}" class="text-indigo-600 hover:underline">Edit</a>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-4 py-3 text-slate-500">{{ $c->customer_id }}</td>
+                            <td class="px-4 py-3 font-medium text-slate-900">{{ $c->full_name }}</td>
+                            <td class="px-4 py-3 text-slate-500">{{ $c->phone }}</td>
+                            <td class="px-4 py-3 text-slate-500">{{ $c->email ?? '—' }}</td>
+                            <td class="px-4 py-3 space-x-3">
+                                <a href="{{ route('admin.customers.show', $c->customer_id) }}" class="text-slate-500 hover:text-slate-800">View</a>
+                                <a href="{{ route('admin.customers.edit', $c->customer_id) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a>
                                 <form method="POST" action="{{ route('admin.customers.destroy', $c->customer_id) }}" class="inline"
                                       onsubmit="return confirm('Delete this customer?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -49,6 +70,8 @@
                     </tbody>
                 </table>
             </div>
+            @endif
         </div>
+
     </div>
 </x-admin-layout>

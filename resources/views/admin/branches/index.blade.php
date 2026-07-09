@@ -1,56 +1,57 @@
 <x-admin-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Branches</h2>
-            <a href="{{ route('admin.branches.create') }}"
-               class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
-                + New Branch
-            </a>
+    <x-slot name="header">Branches</x-slot>
+
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Branches</h1>
+            <p class="mt-1 text-sm text-slate-500">{{ count($branches) }} branch{{ count($branches) === 1 ? '' : 'es' }}</p>
         </div>
-    </x-slot>
+        <a href="{{ route('admin.branches.create') }}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            + New Branch
+        </a>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($branches as $b)
-                        <tr>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $b->branch_id }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">{{ $b->branch_name }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $b->city }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $b->phone ?? '—' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $b->manager_name ?? '—' }}</td>
-                            <td class="px-6 py-4 text-sm space-x-2">
-                                <a href="{{ route('admin.branches.show', $b->branch_id) }}" class="text-blue-600 hover:underline">View</a>
-                                <a href="{{ route('admin.branches.edit', $b->branch_id) }}" class="text-indigo-600 hover:underline">Edit</a>
-                                <form method="POST" action="{{ route('admin.branches.destroy', $b->branch_id) }}" class="inline"
-                                      onsubmit="return confirm('Delete this branch?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        @if(empty($branches))
+            <div class="py-12 text-center text-slate-400">
+                <p class="text-sm">No branches found.</p>
             </div>
+        @else
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">ID</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Branch Name</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">City</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Phone</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Manager</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach($branches as $b)
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-4 py-3 text-slate-500">{{ $b->branch_id }}</td>
+                        <td class="px-4 py-3 font-medium text-slate-900">{{ $b->branch_name }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $b->city }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $b->phone ?? '—' }}</td>
+                        <td class="px-4 py-3 text-slate-500">{{ $b->manager_name ?? '—' }}</td>
+                        <td class="px-4 py-3 space-x-3">
+                            <a href="{{ route('admin.branches.show', $b->branch_id) }}" class="text-slate-500 hover:text-slate-800">View</a>
+                            <a href="{{ route('admin.branches.edit', $b->branch_id) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a>
+                            <form method="POST" action="{{ route('admin.branches.destroy', $b->branch_id) }}" class="inline"
+                                  onsubmit="return confirm('Delete this branch?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
+        @endif
     </div>
 </x-admin-layout>

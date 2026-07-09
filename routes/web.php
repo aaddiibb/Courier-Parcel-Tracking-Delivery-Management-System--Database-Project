@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\RiderController;
 use App\Http\Controllers\Admin\ParcelController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\ParcelController as CustomerParcelController;
@@ -36,13 +38,24 @@ Route::middleware('auth')->group(function () {
 // ── Admin routes ───────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+    Route::get('/analytics/branches', [AnalyticsController::class, 'branches'])->name('analytics.branches');
+    Route::get('/analytics/riders', [AnalyticsController::class, 'riders'])->name('analytics.riders');
+    Route::get('/analytics/parcels', [AnalyticsController::class, 'parcels'])->name('analytics.parcels');
     Route::resource('customers', CustomerController::class);
     Route::resource('branches', BranchController::class);
     Route::resource('riders', RiderController::class);
     Route::resource('parcels', ParcelController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('parcels/{id}/update-status', [ParcelController::class, 'updateStatus'])->name('parcels.updateStatus');
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
-    Route::get('/operations', [ReportsController::class, 'operations'])->name('operations');
+    // Relocated from /admin/operations (2026-07-03): that route/name is now
+    // the new Bulk Parcel Status Tool below. This PL/SQL monitoring page
+    // (sp_intransit_monitor / sp_weight_violation_scan / sp_parcel_cost_audit)
+    // was never linked from any nav — verified via grep before moving it —
+    // so this is a same-day rename, not a breaking change to a used page.
+    Route::get('/reports/monitors', [ReportsController::class, 'operations'])->name('reports.monitors');
+    Route::get('/operations', [OperationsController::class, 'index'])->name('operations');
+    Route::post('/operations/bulk-update', [OperationsController::class, 'bulkUpdate'])->name('operations.bulkUpdate');
 });
 
 // ── Branch Manager routes ──────────────────────────────────────────────────────

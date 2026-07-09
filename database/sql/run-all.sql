@@ -53,3 +53,19 @@ DEFINE base = 'e:\xampp\htdocs\Courier-Parcel-Tracking-Delivery-Management-Syste
 @&base.\06-procedures\01-book-parcel.sql
 @&base.\06-procedures\02-assign-rider.sql
 @&base.\06-procedures\03-update-status.sql
+
+-- Triggers (as cdb_admin) — depend on calculate_fee, so must load after Procedures & Functions
+@&base.\08-triggers\01-trg-status-history.sql
+@&base.\08-triggers\02-trg-auto-fee.sql
+@&base.\08-triggers\03-trg-auto-return.sql
+@&base.\08-triggers\04-trg-rider-active.sql
+
+-- Bulk operations (as cdb_admin) — depends on update_parcel_status
+@&base.\05-plsql\04-bulk-status-update.sql
+
+-- Integration smoke test — deliberately NOT run automatically here.
+-- It rolls back all the data it inserts, but sequence NEXTVAL consumption
+-- is not transactional in Oracle, so including it in every run-all.sql
+-- execution would silently burn sequence values on every setup. Run it by
+-- hand after touching any procedure/function/trigger:
+--   sqlplus cdb_admin/<pw>@XE @database/sql/10-integration-test/01-smoke-test.sql

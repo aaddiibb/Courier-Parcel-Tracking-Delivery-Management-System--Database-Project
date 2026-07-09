@@ -8,10 +8,42 @@ use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = DB::select('SELECT customer_id, full_name, phone, email, address FROM customers ORDER BY full_name');
-        return view('admin.customers.index', compact('customers'));
+        $conditions = [];
+        $bindings   = [];
+
+        if ($request->filled('search')) {
+            $conditions[] = '(UPPER(c.full_name) LIKE UPPER(:search) OR UPPER(c.phone) LIKE UPPER(:search2) OR UPPER(c.email) LIKE UPPER(:search3))';
+            $needle = '%'.strtoupper($request->search).'%';
+            $bindings['search']  = $needle;
+            $bindings['search2'] = $needle;
+            $bindings['search3'] = $needle;
+        }
+
+        if ($request->boolean('active_only')) {
+            // Correlated EXISTS subquery — customers with at least one parcel
+            // not yet in a terminal state.
+            $conditions[] = "EXISTS (
+                SELECT 1 FROM parcels
+                WHERE sender_customer_id = c.customer_id
+                  AND current_status NOT IN ('DELIVERED', 'RETURNED')
+            )";
+        }
+
+        $where = $conditions ? 'WHERE '.implode(' AND ', $conditions) : '';
+
+        $customers = DB::select(
+            "SELECT c.customer_id, c.full_name, c.phone, c.email, c.address
+             FROM customers c
+             {$where}
+             ORDER BY c.full_name",
+            $bindings
+        );
+
+        $filters = $request->only(['search', 'active_only']);
+
+        return view('admin.customers.index', compact('customers', 'filters'));
     }
 
     public function create()
