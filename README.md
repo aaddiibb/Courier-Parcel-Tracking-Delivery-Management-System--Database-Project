@@ -1,59 +1,156 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CourierDB — Courier & Parcel Tracking / Delivery Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full-stack courier operations platform built on **Laravel 12** + **Oracle Database 11g XE**. It's a database-systems course project first and a web app second: the goal is to demonstrate PL/SQL (stored procedures, functions, triggers, cursors, exception handling) actually driving a real, role-based application — not sitting isolated as classroom exercises. Every business rule that must never be bypassed (fee calculation, status-transition validity, auto-return after failed deliveries, rider eligibility) lives in the database as PL/SQL, not in PHP.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Layer | Technology |
+|---|---|
+| Backend | Laravel 12, PHP 8.2 |
+| Database driver | [`yajra/laravel-oci8`](https://github.com/yajra/laravel-oci8) (PDO/OCI8) |
+| Database | Oracle Database 11g Express Edition |
+| Frontend | Blade templates, Tailwind CSS, Alpine.js, bundled with Vite |
+| Auth | Laravel session auth (Breeze scaffolding) + a custom `role` column for RBAC |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+The app deliberately bypasses Eloquent for all business tables — every query is raw `DB::select`/`DB::insert`/`DB::statement`, and every write that has a business rule attached goes through a PL/SQL procedure via a `BEGIN ... END;` PDO call. `users`, `sessions`, `cache`, and `jobs` are the only Laravel-migration-managed tables; everything else (`customers`, `receivers`, `branches`, `riders`, `parcels`, `parcel_status_history`, `delivery_attempts`, `fees`) is raw SQL DDL under `database/sql/`.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Roles & Features
 
-## Learning Laravel
+Four portals share one Oracle schema, gated by `users.role` (`admin` | `branch_mgr` | `rider` | `customer`) via `EnsureUserHasRole` middleware and routed by `App\Support\RoleRedirect`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+**Admin** (`/admin/*`)
+- Dashboard — parcel totals, in-transit count, today's revenue, active rider count, recent bookings filterable by date range
+- Analytics — overview, branch performance, rider performance, parcel funnel/weight-band breakdowns
+- Customers / Branches / Riders — full CRUD
+- Parcels — search/filter/paginate, book a new parcel (with optional rider assignment), view timeline + fee + delivery attempts, manually transition status
+- Operations — bulk-sweep parcels stuck past a day threshold to `RETURNED`/`DELIVERED`, scoped per branch
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Branch Manager** (`/branch/*`)
+- Dashboard + parcel list scoped to their own branch (origin or destination only — enforced server-side, not just hidden in the UI)
+- View parcel detail, update status
 
-## Laravel Sponsors
+**Rider** (`/rider/*`)
+- Dashboard — active jobs / completed jobs, today's delivered/failed counts
+- Log a delivery attempt (success or failure + reason) for a parcel assigned to them
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+**Customer** (`/customer/*`)
+- Dashboard — status breakdown, total spend, 5 most recent parcels
+- Book a parcel, manage saved receivers, view parcel history, track a parcel by tracking code
 
-### Premium Partners
+Self-registration (`/register`) always creates a `customer` account and auto-links (or creates) a matching `customers` row by email. `admin` / `branch_mgr` / `rider` accounts are not self-serviceable — see [Creating role-specific accounts](#creating-role-specific-accounts) below.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Database Objects Reference
 
-## Contributing
+| Object | Type | File | Called from |
+|---|---|---|---|
+| `book_parcel` | Procedure | `06-procedures/01-book-parcel.sql` | Admin & Customer "Book a Parcel" forms |
+| `assign_rider` | Procedure | `06-procedures/02-assign-rider.sql` | Admin "Book a Parcel" form (optional rider dropdown) |
+| `update_parcel_status` | Procedure | `06-procedures/03-update-status.sql` | Admin/Branch parcel show page + Rider delivery log (on success) |
+| `bulk_update_stuck_parcels` | Procedure | `05-plsql/04-bulk-status-update.sql` | Admin → Operations bulk-update form |
+| `calculate_fee` | Function | `07-functions/01-calculate-fee.sql` | Called only from `trg_auto_fee`, not directly from PHP |
+| `get_parcel_status` | Function | `07-functions/02-get-parcel-status.sql` | Not called anywhere — only exercised by the smoke test |
+| `rider_success_rate` | Function | `07-functions/03-rider-success-rate.sql` | Admin Analytics (overview + rider performance) |
+| `customer_total_spend` | Function | `07-functions/04-customer-total-spend.sql` | Customer dashboard |
+| `branch_revenue` | Function | `07-functions/05-branch-revenue.sql` | Admin Analytics (branch performance) |
+| `trg_status_history` | Trigger | `08-triggers/01-trg-status-history.sql` | Fires on every `current_status` change; logs `parcel_status_history` |
+| `trg_auto_fee` | Trigger | `08-triggers/02-trg-auto-fee.sql` | Fires on parcel insert; auto-creates the `fees` row |
+| `trg_auto_return` | Trigger | `08-triggers/03-trg-auto-return.sql` | Fires on delivery-attempt insert; auto-returns after 3 failures |
+| `trg_rider_active` | Trigger | `08-triggers/04-trg-rider-active.sql` | Fires on rider assignment; blocks assigning an inactive rider |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The parcel status state machine is: `BOOKED → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED`, with `RETURNED` reachable from any non-terminal state — enforced entirely inside `update_parcel_status`, not in PHP.
 
-## Code of Conduct
+## Project Structure
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+app/Http/Controllers/
+  Admin/        Admin portal (Dashboard, Analytics, Customers, Branches, Riders, Parcels, Operations)
+  Branch/       Branch manager portal
+  Rider/        Rider portal
+  Customer/     Customer portal
+database/
+  migrations/   Laravel-managed tables only: users, sessions, cache, jobs
+  sql/          Everything else — the real business schema, seed data, and PL/SQL
+    01-setup/       Oracle users (cdb_admin, cdb_branch_mgr, cdb_rider, cdb_customer) + grants
+    02-schema/       Table DDL for the 8 core business tables
+    03-seed/         Demo data
+    05-plsql/        Standalone PL/SQL blocks (bulk status sweep)
+    06-procedures/   book_parcel, assign_rider, update_parcel_status
+    07-functions/    calculate_fee, get_parcel_status, rider_success_rate, customer_total_spend, branch_revenue
+    08-triggers/     trg_status_history, trg_auto_fee, trg_auto_return, trg_rider_active
+    10-integration-test/  Regression smoke test — run after touching any procedure/function/trigger
+    run-all.sql      Runs everything above in dependency order
+resources/views/    Blade templates, one directory per portal (admin/, branch/, rider/, customer/)
+routes/web.php      All route definitions, grouped by role prefix + middleware
+```
 
-## Security Vulnerabilities
+## Setup
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Prerequisites
+- PHP 8.2, Composer
+- Node.js + npm
+- Oracle Database 11g XE (or compatible) with the OCI8 PHP extension and an Instant Client matching your PHP build
 
-## License
+### 1. Install dependencies
+```bash
+composer install
+npm install
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 2. Configure the environment
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+Edit `.env` for Oracle:
+```
+DB_CONNECTION=oracle
+DB_HOST=localhost
+DB_PORT=1521
+DB_DATABASE=XE
+DB_USERNAME=cdb_admin
+DB_PASSWORD=<your password>
+```
+
+### 3. Build the Oracle schema
+Edit the `DEFINE base` path at the top of `database/sql/run-all.sql` to point at your local checkout, then run it as a privileged Oracle user (e.g. `SYSTEM`):
+```
+sqlplus system/<password>@XE @database/sql/run-all.sql
+```
+This creates the four Oracle role users, the 8 core business tables, seed data, and every procedure/function/trigger in the reference table above. After any later change to a procedure/function/trigger, run the regression test by hand:
+```
+sqlplus cdb_admin/<password>@XE @database/sql/10-integration-test/01-smoke-test.sql
+```
+
+### 4. Create Laravel's own tables
+```bash
+php artisan migrate
+php artisan db:seed
+```
+This creates `users`/`sessions`/`cache`/`jobs` and one generic `test@example.com` user — it does not create role-specific demo accounts.
+
+### 5. Build assets and run
+```bash
+npm run dev      # or: npm run build
+php artisan serve
+```
+
+### Creating role-specific accounts
+Registering via `/register` always creates a `customer` account. To test the other portals, register normally, then promote the account directly in the database:
+```sql
+-- Admin
+UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
+
+-- Branch manager (branch_id must match an existing branches.branch_id)
+UPDATE users SET role = 'branch_mgr', branch_id = 1000 WHERE email = 'you@example.com';
+
+-- Rider (also link the riders row so the portal can resolve it)
+UPDATE users SET role = 'rider' WHERE email = 'you@example.com';
+UPDATE riders SET user_id = (SELECT id FROM users WHERE email = 'you@example.com') WHERE rider_id = 1000;
+```
+
+## Known Limitations
+
+- **Fees never get marked paid.** `trg_auto_fee` always inserts `paid_flag = 'N'`, and nothing in the app ever flips it to `'Y'` — so `customer_total_spend` (which only sums paid fees) will always read 0 on unmodified data.
+- **No UI to (re)assign a rider after booking.** `assign_rider` can only be triggered from the initial "Book a Parcel" form; the parcel show page displays the assigned rider read-only.
+- **`get_parcel_status` is dead code** — defined but never called from the app.
+- **Rider delivery logging doesn't gate on parcel state.** A rider can open the delivery log for any active job and select "Delivered Successfully" even if the parcel hasn't reached `OUT_FOR_DELIVERY` yet; `update_parcel_status` correctly rejects the transition, but the rejection surfaces as a raw Oracle error message rather than the UI hiding the option beforehand.

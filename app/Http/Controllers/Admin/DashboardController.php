@@ -28,7 +28,7 @@ class DashboardController extends Controller
             "SELECT COUNT(*) AS cnt FROM riders WHERE active_flag = 'Y'"
         )[0]->cnt;
 
-        // ── Parcels-by-status filter ────────────────────────────────────
+        
         $selectedStatus = $request->query('status', 'BOOKED');
         if (! in_array($selectedStatus, self::STATUSES, true)) {
             $selectedStatus = 'BOOKED';
@@ -39,7 +39,7 @@ class DashboardController extends Controller
             ['status' => $selectedStatus]
         )[0]->cnt;
 
-        // ── Parcels-by-date-range filter ────────────────────────────────
+        
         $dateFrom = $request->query('date_from') ?: now()->subDays(7)->toDateString();
         $dateTo   = $request->query('date_to') ?: now()->toDateString();
 

@@ -3,7 +3,7 @@
 
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-slate-900">Operations — Bulk Parcel Management</h1>
-        <p class="mt-1 text-sm text-slate-500">Review stuck parcels and run bulk status corrections via the PL/SQL cursor procedure</p>
+        <p class="mt-1 text-sm text-slate-500">Review stuck parcels and run bulk status corrections </p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
@@ -50,11 +50,11 @@
         <div class="lg:col-span-2 bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden" x-data="{ status: 'RETURNED' }">
             <div class="px-5 py-4 border-b border-amber-200 bg-amber-50/50">
                 <h3 class="text-sm font-semibold text-amber-800 uppercase tracking-wide">Bulk Update Stuck Parcels</h3>
-                <p class="text-xs text-amber-700/80 mt-0.5">Calls a PL/SQL cursor procedure. This action cannot be undone.</p>
+               
             </div>
 
             <form method="POST" action="{{ route('admin.operations.bulkUpdate') }}" class="p-5 space-y-4"
-                  onsubmit="return confirm('This will call a PL/SQL cursor procedure and update every matching parcel. It cannot be undone. Continue?')">
+                  onsubmit="return confirm('This cannot be undone. Continue?')">
                 @csrf
 
                 <div>

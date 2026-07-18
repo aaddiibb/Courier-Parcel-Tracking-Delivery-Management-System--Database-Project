@@ -10,12 +10,7 @@ use PDOException;
 
 class OperationsController extends Controller
 {
-    /**
-     * Pull the RAISE_APPLICATION_ERROR message out of an Oracle PDOException
-     * (the driver's message body is "Error Code : N\nError Message :
-     * ORA-N: <text>\nORA-06512: at ...", so the first "ORA-N: " line is the
-     * one actually raised by our PL/SQL, not the call-stack trace below it).
-     */
+    
     private function oracleErrorMessage(PDOException $e): string
     {
         if (preg_match('/ORA-\d+:\s*([^\n]+)/', $e->getMessage(), $m)) {
@@ -23,6 +18,8 @@ class OperationsController extends Controller
         }
         return 'A database error occurred.';
     }
+    
+
 
     public function index()
     {
@@ -50,13 +47,6 @@ class OperationsController extends Controller
             'new_status'     => 'required|in:RETURNED,DELIVERED',
         ]);
 
-        // Deliberately NOT wrapped in DB::transaction(): bulk_update_stuck_parcels
-        // already loops row-by-row internally with its own WHEN OTHERS handler
-        // that skips (not rolls back) individually-invalid rows so one bad row
-        // can't block the rest of the batch. Wrapping this call in an outer
-        // Laravel transaction would fight that per-row partial-success model —
-        // there is nothing left for an outer transaction to protect, since the
-        // procedure is the single unit of work here.
         try {
             $pdo  = DB::getPdo();
             $stmt = $pdo->prepare('BEGIN bulk_update_stuck_parcels(:bid, :days, :st, :cnt); END;');

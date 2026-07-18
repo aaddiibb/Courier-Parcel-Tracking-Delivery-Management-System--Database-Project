@@ -1,8 +1,4 @@
--- 07-parcel-status-history.sql
--- Audit trail of every status change for a parcel.
--- NOTE: Day 11 adds a trigger that auto-inserts rows here whenever
---       parcels.current_status changes. Do NOT create that trigger today.
--- Run as: cdb_admin@XE  Re-runnable.
+
 
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE parcel_status_history';
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -942 THEN NULL; ELSE RAISE; END IF; END;
@@ -18,4 +14,4 @@ CREATE TABLE parcel_status_history (
     remarks      VARCHAR2(200)
 );
 
-PROMPT Table PARCEL_STATUS_HISTORY created.
+

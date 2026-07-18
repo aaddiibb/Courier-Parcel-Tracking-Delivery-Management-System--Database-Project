@@ -1,8 +1,3 @@
--- 01-calculate-fee.sql
--- Tiered parcel fee calculation.
--- Called by book_parcel (database/sql/06-procedures/01-book-parcel.sql) and,
--- once it exists, by trg_auto_fee (Prompt B) — must compile before either.
--- Run as: cdb_admin@XE  Re-runnable (CREATE OR REPLACE).
 
 CREATE OR REPLACE FUNCTION calculate_fee(p_weight IN NUMBER) RETURN NUMBER IS
     v_total NUMBER(8,2);
@@ -20,4 +15,4 @@ END calculate_fee;
 /
 
 SHOW ERRORS FUNCTION calculate_fee;
-PROMPT Function CALCULATE_FEE compiled.
+

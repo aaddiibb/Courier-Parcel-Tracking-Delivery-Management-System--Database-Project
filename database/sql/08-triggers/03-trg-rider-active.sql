@@ -1,9 +1,4 @@
--- 04-trg-rider-active.sql
--- Blocks assigning an inactive (or nonexistent) rider to a parcel at the DB
--- level — a protection that didn't exist before today, since no controller
--- currently validates rider activity before setting assigned_rider_id.
---
--- Run as: cdb_admin@XE  Re-runnable (CREATE OR REPLACE).
+
 
 CREATE OR REPLACE TRIGGER trg_rider_active
 BEFORE INSERT OR UPDATE OF assigned_rider_id ON parcels
@@ -25,4 +20,4 @@ END;
 /
 
 SHOW ERRORS TRIGGER trg_rider_active;
-PROMPT Trigger TRG_RIDER_ACTIVE compiled.
+

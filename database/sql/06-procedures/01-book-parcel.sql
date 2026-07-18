@@ -1,21 +1,4 @@
--- 01-book-parcel.sql
--- Books a new parcel: validates weight and branches, generates the tracking
--- code, inserts the parcel row and its initial BOOKED history row.
---
--- NOTE: the initial BOOKED history insert here is intentional and stays even
--- after Prompt B adds trg_status_history — that trigger only fires on UPDATE
--- of current_status, never on INSERT, so this INSERT-time row would never be
--- logged automatically. Not a duplicate.
---
--- NOTE: no fee row is inserted here. Prompt B's trg_auto_fee trigger (fired
--- on INSERT INTO parcels) is responsible for that. Until Prompt B lands,
--- booking a parcel will NOT create a fees row — see docs/PROGRESS.md.
---
--- Depends on: calculate_fee (07-functions/01-calculate-fee.sql) — not called
--- directly by this procedure, but must compile first per the load order in
--- run-all.sql, since Prompt B's trigger will call it during this same INSERT.
---
--- Run as: cdb_admin@XE  Re-runnable (CREATE OR REPLACE).
+
 
 CREATE OR REPLACE PROCEDURE book_parcel(
     p_sender_id       IN  NUMBER,
@@ -65,4 +48,4 @@ END book_parcel;
 /
 
 SHOW ERRORS PROCEDURE book_parcel;
-PROMPT Procedure BOOK_PARCEL compiled.
+

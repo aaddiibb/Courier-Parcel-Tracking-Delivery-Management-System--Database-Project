@@ -188,11 +188,7 @@ class ParcelController extends Controller
             ['tc' => $trackingCode]
         )[0]->parcel_id;
 
-        // book_parcel has no rider parameter, so an optional rider chosen on
-        // the create form is applied as a second step via assign_rider. The
-        // parcel is already booked at this point regardless of what happens
-        // here, so a failed assignment (e.g. inactive rider -> ORA-20010)
-        // flashes as a warning rather than blocking the redirect.
+        
         if ($request->filled('assigned_rider_id')) {
             try {
                 $pdo  = DB::getPdo();

@@ -1,17 +1,3 @@
--- 03-update-status.sql
--- Enforces the parcel status state machine and applies a status change.
--- Valid transitions:
---   BOOKED           -> IN_TRANSIT, RETURNED
---   IN_TRANSIT       -> OUT_FOR_DELIVERY, RETURNED
---   OUT_FOR_DELIVERY -> DELIVERED, RETURNED
---   DELIVERED, RETURNED are terminal — any further change is rejected.
---
--- NOTE: history logging is handled by trg_status_history (Prompt B), not
--- here. Until that trigger exists, calling this procedure updates
--- parcels.current_status but does NOT write a parcel_status_history row —
--- see docs/PROGRESS.md ("pending Prompt B").
---
--- Run as: cdb_admin@XE  Re-runnable (CREATE OR REPLACE).
 
 CREATE OR REPLACE PROCEDURE update_parcel_status(
     p_parcel_id  IN NUMBER,

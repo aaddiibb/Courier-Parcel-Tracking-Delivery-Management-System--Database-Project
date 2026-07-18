@@ -1,18 +1,3 @@
--- 02-assign-rider.sql
--- Assigns (or re-assigns) a rider to a parcel. A BOOKED parcel picking up its
--- first rider transitions to IN_TRANSIT; an already-IN_TRANSIT parcel just
--- gets a new rider with no status change. Any other current status is
--- rejected — you can't assign a rider to a parcel that's already out for
--- delivery, delivered, or returned.
---
--- NOTE: not wired into any controller yet (see docs/PROGRESS.md) — the admin
--- booking form's optional rider dropdown is not currently connected to this
--- procedure, a deliberate scope limit for today's pass.
---
--- NOTE: the BOOKED -> IN_TRANSIT branch relies on trg_status_history
--- (Prompt B) to log that transition; no manual history insert here.
---
--- Run as: cdb_admin@XE  Re-runnable (CREATE OR REPLACE).
 
 CREATE OR REPLACE PROCEDURE assign_rider(
     p_parcel_id  IN NUMBER,
@@ -44,4 +29,4 @@ END assign_rider;
 /
 
 SHOW ERRORS PROCEDURE assign_rider;
-PROMPT Procedure ASSIGN_RIDER compiled.
+

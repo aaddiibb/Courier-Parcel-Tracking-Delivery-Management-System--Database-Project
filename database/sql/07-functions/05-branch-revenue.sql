@@ -1,7 +1,3 @@
--- 05-branch-revenue.sql
--- Sum of paid fees for parcels originating at a branch.
--- Called by the Branch Analytics report (Prompt C).
--- Run as: cdb_admin@XE  Re-runnable (CREATE OR REPLACE).
 
 CREATE OR REPLACE FUNCTION branch_revenue(p_branch_id IN NUMBER) RETURN NUMBER IS
     v_total NUMBER;
@@ -18,4 +14,4 @@ END branch_revenue;
 /
 
 SHOW ERRORS FUNCTION branch_revenue;
-PROMPT Function BRANCH_REVENUE compiled.
+

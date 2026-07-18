@@ -1,6 +1,3 @@
--- 05-riders.sql
--- Delivery riders assigned to branches.
--- Run as: cdb_admin@XE  Re-runnable.
 
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE riders';
 EXCEPTION WHEN OTHERS THEN IF SQLCODE = -942 THEN NULL; ELSE RAISE; END IF; END;
@@ -16,4 +13,4 @@ CREATE TABLE riders (
     active_flag         CHAR(1)         DEFAULT 'Y'
 );
 
-PROMPT Table RIDERS created.
+
